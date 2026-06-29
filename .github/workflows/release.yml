@@ -99,22 +99,11 @@ jobs:
             ${{ steps.package.outputs.zip }}
             ${{ steps.package.outputs.checksum }}
 
-      - name: Publish GitHub release
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $version = "${{ steps.version.outputs.version }}"
-          $args = @(
-            "release", "create", $version,
-            "${{ steps.package.outputs.zip }}",
-            "${{ steps.package.outputs.checksum }}",
-            "--title", "ERC $version",
-            "--notes", "Automated release for ERC $version."
-          )
-
-          if ("${{ github.ref_type }}" -ne "tag") {
-            $args += @("--target", "${{ github.sha }}")
-          }
-
-          gh @args
+      - name: Upload Packages(release)
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          artifacts: "bin/Release/net8.0-windows/${{ steps.version.outputs.version }}.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "${{ steps.version.outputs.version }} release"
+          tag: "${{ steps.version.outputs.version }}"
+          generateReleaseNotes: true
